@@ -159,11 +159,26 @@ in {
       gswm = "${gsw} main";
       gundo = "git reset HEAD~1 --mixed";
       gw = "git worktree";
-      gwa = ''() { git worktree add -b "$1" --guess-remote "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/$1" }'';
-      gwc = ''() { local branch="$1"; git worktree add "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/''${branch//\//-}" "$branch" }'';
       gwd = "${gw} remove . && cd ..";
       gwl = "${gw} list";
       gwp = "${gw} prune";
+      wt = ''
+        () {
+          local ROOT="$HOME/Developer/devin-webapp" DIR="''${1##*/}"
+          git -C "$ROOT" worktree prune
+          local WT=$(git -C "$ROOT" worktree list --porcelain | awk -v b="refs/heads/$1" '$1=="worktree"{w=$2} $2==b{print w}')
+          if [[ -n "$WT" ]]; then
+            DIR="''${WT##*/}"
+            local WS=$(herdr workspace list | jq -r --arg l "$DIR" 'first(.result.workspaces[] | select(.label==$l).workspace_id)')
+            [[ -n "$WS" ]] && herdr workspace focus "$WS" >/dev/null ||
+              herdr workspace create --cwd "$WT/apps/chisel" --label "$DIR" --focus >/dev/null
+            return
+          fi
+          git -C "$ROOT" fetch origin "$1:$1" 2>/dev/null
+          git -C "$ROOT" worktree add "$ROOT/$DIR" "$1" 2>/dev/null || git -C "$ROOT" worktree add "$ROOT/$DIR" -b "$1" || return
+          git -C "$ROOT" config "branch.$1.remote" origin && git -C "$ROOT" config "branch.$1.merge" "refs/heads/$1"
+          herdr pane run "$(herdr workspace create --cwd "$ROOT/$DIR/apps/chisel" --label "$DIR" --focus | jq -r .result.root_pane.pane_id)" ./setup.sh
+        }'';
 
       # files
       cat = "bat";
