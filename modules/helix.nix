@@ -1,4 +1,9 @@
-{config, ...}: let
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}: let
   colorPreview = {
     name = "uwu-colors";
     only-features = ["document-colors"];
@@ -7,9 +12,22 @@
     command = "prettier";
     args = ["--parser" parser "--tab-width" (toString tabWidth)];
   };
+  blame-lsp = pkgs.buildNpmPackage {
+    pname = "blame-lsp";
+    version = "0.1.3";
+    src = pkgs.fetchFromGitHub {
+      owner = "pixelbreaker";
+      repo = "blame-lsp";
+      rev = "b1678fc5cbba202ad0c0b465d32b74d77e17ad6f";
+      hash = "sha256-ins13sg5C73hJMc1ZNNhOFY83CUuF5Qj+s8KeZ4M7Wc=";
+    };
+    npmDepsHash = "sha256-tOapaAz4/dkp8VeJWpQevxh0w0obCAK+qZaCk8UY6vk=";
+    npmDepsFetcherVersion = 2;
+  };
 in {
   programs.helix = {
     enable = true;
+    extraPackages = [blame-lsp];
     settings = {
       editor = {
         gutters = [
@@ -54,7 +72,7 @@ in {
           V = ["extend_line_below" "select_mode"];
           G = "goto_file_end";
           g.q = ":reflow";
-          C-b = ":sh git blame -L %{cursor_line},%{cursor_line} -- %{buffer_name} | sed 's/).*$/)/'";
+          C-b = ":sh git log -n 5 --format='format:%%h (%%an, %%ar) %%s' --no-patch -L%{cursor_line},+1:%{buffer_name}";
           C-r = ":reload";
           space = {
             w = ":write";
@@ -87,6 +105,10 @@ in {
         command = "cook";
         args = ["lsp"];
       };
+      blame-lsp = {
+        command = "blame-lsp";
+        args = ["--stdio"];
+      };
       uwu-colors = {
         command = "uwu_colors";
       };
@@ -116,19 +138,21 @@ in {
         name = "nix";
         auto-format = true;
         formatter = {command = "alejandra";};
-        language-servers = ["nil" "nixd" colorPreview];
+        language-servers = ["nil" "nixd" colorPreview "blame-lsp"];
       }
       {
         name = "markdown";
-        language-servers = ["marksman"];
+        language-servers = ["marksman" "blame-lsp"];
       }
       {
         name = "go";
         formatter = {command = "goimports";};
+        language-servers = ["gopls" "golangci-lint-lsp" "blame-lsp"];
       }
       {
         name = "lua";
         auto-format = true;
+        language-servers = ["lua-language-server" "blame-lsp"];
       }
       {
         name = "vhs";
@@ -149,6 +173,7 @@ in {
         indent.tab-width = 4;
         indent.unit = "    ";
         formatter = mkPrettier "typescript" 4;
+        language-servers = ["typescript-language-server" "blame-lsp"];
       }
       {
         name = "fennel";
@@ -190,6 +215,7 @@ in {
         name = "typst";
         file-types = ["typ"];
         roots = [".git"];
+        language-servers = ["tinymist" "blame-lsp"];
       }
     ];
   };
