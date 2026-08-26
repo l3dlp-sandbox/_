@@ -127,6 +127,7 @@ in {
       ghpl = "gh pr list --assignee @me";
       ghpv = "gh pr view";
       pr = "${ghpv} --web";
+      stamp = ''gh pr review --approve --body "stamp"'';
       gl = "git pull";
       glm = ''git -C "$(dirname "$(git rev-parse --path-format=absolute --git-common-dir)")/main" pull'';
       glr = "${gl} --rebase";
