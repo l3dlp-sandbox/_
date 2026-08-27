@@ -165,6 +165,7 @@ in {
       gwp = "${gw} prune";
       wt = ''
         () {
+          [[ "$1" == https://*/pull/* ]] && { 1=$(gh pr view "$1" --json headRefName -q .headRefName) || return }
           local ROOT="$HOME/Developer/devin-webapp" DIR="''${1##*/}"
           git -C "$ROOT" worktree prune
           local WT=$(git -C "$ROOT" worktree list --porcelain | awk -v b="refs/heads/$1" '$1=="worktree"{w=$2} $2==b{print w}')
