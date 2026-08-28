@@ -196,7 +196,7 @@ in {
       goi = "go install";
 
       # rust
-      cr = "cd apps/chisel 2>/dev/null; cargo run";
+      cr = "cd apps/chisel 2>/dev/null; cargo run -- --permission-mode bypass";
       cb = "cargo build";
       ct = "cargo test";
       cl = "cargo clippy";
