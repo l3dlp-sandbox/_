@@ -170,6 +170,10 @@ in {
         language-servers = ["lua-language-server" "blame-lsp"];
       }
       {
+        name = "rust";
+        language-servers = ["rust-analyzer" "blame-lsp"];
+      }
+      {
         name = "vhs";
         auto-format = true;
         language-servers = ["vhs-language-server"];
