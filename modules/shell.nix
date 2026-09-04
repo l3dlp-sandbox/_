@@ -236,6 +236,7 @@ in {
       af = "aerospace fullscreen";
 
       dev = "devin-insiders --permission-mode bypass";
+      devmax = "XDG_DATA_HOME=$HOME/.devin-max devin-insiders --permission-mode bypass";
 
       cop = "copilot --yolo";
       _cop = "pnpm run cli";
